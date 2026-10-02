@@ -1,6 +1,6 @@
 import { clampTokenValues, cloneTokens, contrastRatio, normalizeColor, themeTokens, validateTokens } from '../domain/brandRules'
 import type { BrandRepository } from '../repositories/brandRepository'
-import type { BrandGuidelinesExporter } from '../services/exportService'
+import type { BrandGuidelinesExporter, BrandGuidelinesOptions } from '../services/exportService'
 import { INITIAL_TOKENS, type BrandDocument, type BrandMirrorSnapshot, type BrandTheme, type SavedVersion } from '../models/brandMirrorModels'
 
 type Listener = () => void
@@ -76,10 +76,10 @@ export class BrandMirrorViewModel {
     this.emit()
   }
 
-  exportBrandGuidelines(): void {
+  exportBrandGuidelines(options: BrandGuidelinesOptions): void {
     if (!this.exporter) return
     try {
-      this.exporter.export(this.snapshot)
+      this.exporter.export(this.snapshot, options)
       this.snapshot = { ...this.snapshot, message: '品牌规范已导出' }
     } catch {
       this.snapshot = { ...this.snapshot, status: 'error', message: '导出失败，请稍后重试' }

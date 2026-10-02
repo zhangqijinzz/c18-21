@@ -181,6 +181,28 @@ h1 em { color: #f15a47; font-style: normal; }
 .bottom-status { max-width: 1484px; margin: 0 auto; padding: 18px 48px 24px; color: #a3aab3; border-top: 1px solid #e5e7ea; display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 9px; }
 .bottom-status span { display: inline-flex; align-items: center; gap: 7px; }
 .footer-sep { margin: 0 4px; }
+.export-backdrop { position: fixed; inset: 0; z-index: 20; padding: 24px; background: rgba(32,37,44,.42); display: grid; place-items: center; }
+.export-dialog { width: min(430px, 100%); max-height: calc(100vh - 48px); padding: 20px; overflow-y: auto; background: #fff; border-radius: 12px; box-shadow: 0 18px 50px #1c273533; }
+.export-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; }
+.export-dialog-head h3 { margin-top: 4px; font-size: 16px; letter-spacing: -.03em; }
+.export-close { padding: 2px 6px; color: #a4abb4; background: none; border: 0; font-size: 18px; line-height: 1; }
+.export-close:hover { color: #f15a47; }
+.export-section { margin-top: 18px; }
+.export-scope-option, .export-version-option { padding: 9px 10px; border: 1px solid #e6e9ec; border-radius: 8px; display: flex; gap: 9px; align-items: flex-start; cursor: pointer; }
+.export-scope-option + .export-scope-option { margin-top: 6px; }
+.export-scope-option:has(input:checked), .export-version-option:has(input:checked) { border-color: #f15a4766; background: #fff7f5; }
+.export-scope-option input, .export-version-option input { margin-top: 2px; accent-color: #f15a47; }
+.export-scope-option strong, .export-version-option strong { display: block; color: #4b5563; font-size: 11px; }
+.export-scope-option small, .export-version-option small { display: block; margin-top: 2px; color: #a2a9b3; font-size: 9px; }
+.export-scope-option.disabled { opacity: .55; cursor: not-allowed; }
+.export-version-list { max-height: 150px; overflow-y: auto; display: grid; gap: 6px; }
+.export-preview { padding: 12px; background: #f7f8fa; border: 1px solid #eceef1; border-radius: 9px; }
+.export-preview-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.export-preview-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 10px; }
+.export-preview-list li > span { flex: 0 0 auto; color: #9aa1ab; }
+.export-preview-list strong { color: #4b5563; font-weight: 600; text-align: right; }
+.export-preview-list code { color: #f15a47; font-family: 'DM Mono', monospace; font-size: 9px; text-align: right; word-break: break-all; }
+.export-actions { margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px; }
 @media (max-width: 1100px) { .workspace { grid-template-columns: 230px minmax(0, 1fr); gap: 30px; padding-left: 28px; padding-right: 28px; } .component-grid { grid-template-columns: repeat(3, 1fr); } .topbar { padding: 0 28px; } .bottom-status { padding-left: 28px; padding-right: 28px; } }
 @media (max-width: 800px) { .workspace { display: block; padding-top: 20px; } .control-panel { position: static; margin-bottom: 40px; } .hero-heading { padding-top: 5px; } .component-grid { grid-template-columns: repeat(2, 1fr); } .page-grid { grid-template-columns: 1fr; } .page-card { min-height: 330px; } }
 @media (max-width: 540px) { .topbar { height: 60px; padding: 0 18px; } .brand-subtitle, .save-state { display: none; } .workspace { padding: 15px 18px 50px; } .hero-heading { display: block; padding-bottom: 30px; } .feedback-toast { margin-top: 22px; width: 100%; } .component-grid { grid-template-columns: 1fr 1fr; gap: 7px; } .component-card { padding: 9px; } .sample { min-height: 90px; } .landing-card { padding: 18px; } .mock-nav { display: none; } .version-section { margin-top: 36px; } .showcase-heading { align-items: flex-end; } .showcase-heading > .muted { max-width: 100px; text-align: right; } .version-actions { flex-direction: column; align-items: flex-end; } .version-actions button { width: 100%; } .version-empty { padding: 14px; } .bottom-status { padding: 16px 18px; } .bottom-status > span:last-child { display: none; } }

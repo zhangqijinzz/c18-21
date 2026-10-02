@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { BrandMirrorViewModel } from '../viewmodels/brandMirrorViewModel'
 import type { BrandDocument } from '../models/brandMirrorModels'
 import type { BrandRepository } from '../repositories/brandRepository'
-import { buildBrandGuidelinesMarkdown, type BrandGuidelinesExporter } from '../services/exportService'
+import { buildBrandGuidelinesMarkdown, type BrandGuidelinesExporter, type BrandGuidelinesOptions } from '../services/exportService'
 
 class MemoryRepository implements BrandRepository {
   document: BrandDocument | null = null
@@ -13,7 +13,11 @@ class MemoryRepository implements BrandRepository {
 
 class MemoryExporter implements BrandGuidelinesExporter {
   received: string | null = null
-  export(snapshot: Parameters<BrandGuidelinesExporter['export']>[0]): void { this.received = buildBrandGuidelinesMarkdown(snapshot) }
+  options: BrandGuidelinesOptions | null = null
+  export(snapshot: Parameters<BrandGuidelinesExporter['export']>[0], options: BrandGuidelinesOptions): void {
+    this.options = options
+    this.received = buildBrandGuidelinesMarkdown(snapshot, options)
+  }
 }
 
 describe('BrandMirrorViewModel', () => {
@@ -64,9 +68,9 @@ describe('BrandMirrorViewModel', () => {
     const exporter = new MemoryExporter()
     const viewModel = new BrandMirrorViewModel(repository, exporter)
     viewModel.initialize()
-    viewModel.exportBrandGuidelines()
+    viewModel.exportBrandGuidelines({ includeVersions: false, versionIds: [] })
     expect(exporter.received).toContain('# BrandMirror 品牌规范')
-    expect(exporter.received).toContain('`primary`')
+    expect(exporter.received).toContain('`color.primary`')
     expect(viewModel.getSnapshot().message).toContain('导出')
   })
 })
