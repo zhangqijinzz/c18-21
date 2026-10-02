@@ -1,9 +1,12 @@
 import { clampTokenValues, cloneTokens, contrastRatio, normalizeColor, themeTokens, validateTokens } from '../domain/brandRules'
 import type { BrandRepository } from '../repositories/brandRepository'
 import type { BrandGuidelinesExporter } from '../services/exportService'
+import { ALL_EXPORT_SECTIONS, buildExportPlan, isExportRequestValid, type ExportPlan, type ExportScope, type ExportSections } from '../services/exportService'
 import { INITIAL_TOKENS, type BrandDocument, type BrandMirrorSnapshot, type BrandTheme, type SavedVersion } from '../models/brandMirrorModels'
 
 type Listener = () => void
+
+const CONTENT_SECTIONS: (keyof ExportSections)[] = ['colors', 'radius', 'spacing', 'type']
 
 export class BrandMirrorViewModel {
   private snapshot: BrandMirrorSnapshot = this.makeSnapshot({ tokens: INITIAL_TOKENS, theme: 'studio', versions: [] })
@@ -65,6 +68,7 @@ export class BrandMirrorViewModel {
       id: `version-${Date.now()}`,
       label: this.snapshot.versions.length === 0 ? 'Version A' : `Version ${String.fromCharCode(65 + this.snapshot.versions.length)}`,
       tokens: cloneTokens(this.snapshot.tokens),
+      theme: this.snapshot.theme,
       createdAt: new Date().toISOString(),
     }
     const versions = [...this.snapshot.versions, nextVersion]
@@ -76,15 +80,50 @@ export class BrandMirrorViewModel {
     this.emit()
   }
 
-  exportBrandGuidelines(): void {
-    if (!this.exporter) return
+  openExportDialog(): void {
+    this.snapshot = {
+      ...this.snapshot,
+      exportDialogOpen: true,
+      exportScope: 'current',
+      exportSections: { ...ALL_EXPORT_SECTIONS },
+      exportPlan: this.buildPlan('current', ALL_EXPORT_SECTIONS),
+    }
+    this.emit()
+  }
+
+  closeExportDialog(): void {
+    this.snapshot = { ...this.snapshot, exportDialogOpen: false }
+    this.emit()
+  }
+
+  selectExportScope(scope: ExportScope): void {
+    const plan = this.buildPlan(scope, this.snapshot.exportSections)
+    if (!plan) return
+    this.snapshot = { ...this.snapshot, exportScope: scope, exportPlan: plan }
+    this.emit()
+  }
+
+  toggleExportSection(section: keyof ExportSections): void {
+    const sections = { ...this.snapshot.exportSections, [section]: !this.snapshot.exportSections[section] }
+    if (!CONTENT_SECTIONS.some((key) => sections[key])) return
+    this.snapshot = { ...this.snapshot, exportSections: sections, exportPlan: this.buildPlan(this.snapshot.exportScope, sections) }
+    this.emit()
+  }
+
+  confirmExport(): void {
+    if (!this.exporter || !this.snapshot.exportPlan) return
     try {
-      this.exporter.export(this.snapshot)
-      this.snapshot = { ...this.snapshot, message: '品牌规范已导出' }
+      this.exporter.export(this.snapshot.exportPlan.markdown, this.snapshot.exportPlan.fileName)
+      this.snapshot = { ...this.snapshot, exportDialogOpen: false, message: `品牌规范已导出：${this.snapshot.exportPlan.scopeLabel}` }
     } catch {
       this.snapshot = { ...this.snapshot, status: 'error', message: '导出失败，请稍后重试' }
     }
     this.emit()
+  }
+
+  private buildPlan(scope: ExportScope, sections: ExportSections): ExportPlan | null {
+    const request = { scope, sections, theme: this.snapshot.theme, tokens: this.snapshot.tokens, versions: this.snapshot.versions }
+    return isExportRequestValid(request) ? buildExportPlan(request) : null
   }
 
   private update(partial: Partial<Pick<BrandDocument, 'tokens' | 'theme'>>, message: string): void {
@@ -115,7 +154,7 @@ export class BrandMirrorViewModel {
   private makeSnapshot(document: Omit<BrandDocument, 'version'>, message = '', status: BrandMirrorSnapshot['status'] = 'ready'): BrandMirrorSnapshot {
     const ratio = contrastRatio(document.tokens.primary, document.tokens.secondary)
     const latestVersion = document.versions[document.versions.length - 1]
-    return { status, tokens: cloneTokens(document.tokens), theme: document.theme, versions: document.versions, compareMode: false, activeVersionId: latestVersion?.id ?? null, contrastRatio: ratio, contrastWarning: ratio < 3, message }
+    return { status, tokens: cloneTokens(document.tokens), theme: document.theme, versions: document.versions, compareMode: false, activeVersionId: latestVersion?.id ?? null, contrastRatio: ratio, contrastWarning: ratio < 3, message, exportDialogOpen: false, exportScope: 'current', exportSections: { ...ALL_EXPORT_SECTIONS }, exportPlan: null }
   }
 
   private emit(): void {
